@@ -1,0 +1,7 @@
+{
+  "name": "GeoJourney Tracker",
+  "description": "An intelligent trip tracker that automatically detects your origin, destination, and mode of transport using your phone's motion and location, saving your journeys for you to review.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
