@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import Tracker from './components/Tracker';
 import History from './components/History';
 import MapView from './components/MapView';
@@ -10,7 +11,7 @@ import { useExpenses } from './hooks/useExpenses';
 import { useBudget } from './hooks/useBudget';
 import { HistoryIcon, MapPinIcon, WalletIcon, LightbulbIcon, UserCircleIcon, DashboardIcon, MoonIcon, SunIcon } from './components/Icons';
 import { Trip } from './types';
-import { useTheme } from './hooks/useTheme';
+
 import { demoTrips, demoExpenses } from './utils/demoData';
 
 type View = 'tracker' | 'history' | 'expenses' | 'suggestions' | 'profile';
@@ -21,7 +22,7 @@ const UserApp: React.FC = () => {
   const { expenses: userExpenses, addExpense, clearExpenses } = useExpenses();
   const { clearBudget } = useBudget();
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
-  const { theme, toggleTheme } = useTheme();
+  
 
   const displayTrips = useMemo(() => {
     return userTrips.length > 0 ? userTrips : demoTrips;
@@ -65,10 +66,12 @@ const UserApp: React.FC = () => {
           Geo<span className="text-cyan-500 dark:text-cyan-400">Journey</span>
         </h1>
         <div className="flex-1 flex justify-end items-center gap-4">
-          <a href="/dashboard" className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-cyan-600 dark:text-cyan-300 bg-cyan-500/10 rounded-md hover:bg-cyan-500/20 transition-colors">
-              <DashboardIcon />
+<Link
+  to="/dashboard"
+  className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-cyan-600 dark:text-cyan-300 bg-cyan-500/10 rounded-md hover:bg-cyan-500/20 transition-colors"
+>              <DashboardIcon />
               <span>Dashboard</span>
-          </a>
+          </Link>
           
         </div>
       </header>
