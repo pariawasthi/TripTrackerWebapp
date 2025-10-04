@@ -7,7 +7,7 @@ import LiveMapView from './LiveMapView';
 import StartTripModal from './StartTripModal';
 import ManualTripForm from './ManualTripForm';
 import WeatherDisplay from './WeatherDisplay';
-import RouteSuggestion from './RouteSuggestion';
+
 import { formatDuration } from '../utils/formatters';
 import { MapIcon, PauseIcon, PlayIcon } from './Icons';
 
@@ -257,7 +257,7 @@ const Tracker: React.FC<TrackerProps> = ({ addTrip }) => {
       {!isTracking && (
         <div className="w-full max-w-md space-y-4">
           <WeatherDisplay weather={weather} isLoading={isWeatherLoading} error={weatherError} />
-          <RouteSuggestion origin={currentCoords} weather={weather} />
+         
         </div>
       )}
 

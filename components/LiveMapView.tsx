@@ -28,29 +28,28 @@ interface LiveMapViewProps {
   onNotesChange: (notes: string) => void;
 }
 
-// A component to automatically pan the map to the user's current location
+// Component to automatically pan map to user's location
 const MapUpdater: React.FC<{ position: L.LatLngExpression }> = ({ position }) => {
   const map = useMap();
   useEffect(() => {
-    map.setView(position, map.getZoom() < 15 ? 15 : map.getZoom()); 
+    map.setView(position, map.getZoom() < 15 ? 15 : map.getZoom());
   }, [position, map]);
   return null;
 };
 
-
 const LiveMapView: React.FC<LiveMapViewProps> = ({ path, onClose, notes, onNotesChange }) => {
-  const { theme } = useTheme();
+  const { theme } = useTheme(); // still used for UI (not for map)
   const [showNotesModal, setShowNotesModal] = useState(false);
   const positions = useMemo(() => path.map(p => [p.lat, p.lng] as L.LatLngExpression), [path]);
 
   const currentPosition = positions.length > 0 ? positions[positions.length - 1] : null;
 
-  const lightTileUrl = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
-  const darkTileUrl = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+  // 🌎 Satellite map (Esri World Imagery)
+  const satelliteTileUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 
   return (
     <div className="fixed inset-0 bg-white dark:bg-gray-900 z-50 flex flex-col animate-fade-in">
-       <header className="p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg flex items-center z-10 flex-shrink-0">
+      <header className="p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg flex items-center z-10 flex-shrink-0">
         <button 
           onClick={onClose} 
           className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
@@ -62,27 +61,28 @@ const LiveMapView: React.FC<LiveMapViewProps> = ({ path, onClose, notes, onNotes
           Live Tracking
         </h2>
       </header>
+
       <div className="flex-grow relative">
         {currentPosition ? (
-            <MapContainer 
-                center={currentPosition}
-                zoom={16}
-                style={{ height: '100%', width: '100%', backgroundColor: theme === 'light' ? '#ffffff' : '#111827' }}
-                scrollWheelZoom={true}
-            >
+          <MapContainer 
+            center={currentPosition}
+            zoom={16}
+            style={{ height: '100%', width: '100%' }}
+            scrollWheelZoom={true}
+          >
             <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                url={theme === 'light' ? lightTileUrl : darkTileUrl}
+              attribution='&copy; <a href="https://www.esri.com/">Esri</a> & contributors'
+              url={satelliteTileUrl}
             />
             <Polyline pathOptions={{ color: '#22d3ee', weight: 4, opacity: 0.8 }} positions={positions} />
             <Marker position={currentPosition} icon={pulsatingIcon} />
             <MapUpdater position={currentPosition} />
-            </MapContainer>
+          </MapContainer>
         ) : (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-                <Loader />
-                <p className="mt-4 text-gray-500 dark:text-gray-400">Waiting for GPS signal...</p>
-            </div>
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <Loader />
+            <p className="mt-4 text-gray-500 dark:text-gray-400">Waiting for GPS signal...</p>
+          </div>
         )}
 
         <button
@@ -93,7 +93,7 @@ const LiveMapView: React.FC<LiveMapViewProps> = ({ path, onClose, notes, onNotes
           <PencilAltIcon />
         </button>
       </div>
-      
+
       <TakeNotesModal
         isOpen={showNotesModal}
         onClose={() => setShowNotesModal(false)}

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Expense, Trip, Budget } from '../types';
+import { Expense, Trip, Budget, ExpenseCategory } from '../types';
 import ExpenseCard from './ExpenseCard';
 import AddExpense from './AddExpense';
 import { PlusIcon, TrashIcon, TrendingUpIcon } from './Icons';
@@ -8,18 +8,19 @@ import { useBudget } from '../hooks/useBudget';
 import SetBudgetModal from './SetBudgetModal';
 
 interface ExpensesProps {
-  expenses: Expense[];
   trips: Trip[];
-  addExpense: (expense: Omit<Expense, 'id' | 'timestamp'>) => void;
-  clearExpenses: () => void;
 }
 
-const ExpenseSummary: React.FC<{ expenses: Expense[]; budget: Budget | null; onSetBudget: () => void; }> = ({ expenses, budget, onSetBudget }) => {
+const demoExpenses: Expense[] = [
+  { id: '1', description: 'Flight to Delhi', amount: 5000, currency: 'INR', category: ExpenseCategory.TICKET, timestamp: new Date(), tripId: 't1' },
+  { id: '2', description: 'Hotel Booking', amount: 3000, currency: 'INR', category: ExpenseCategory.ACCOMMODATION, timestamp: new Date(), tripId: 't1' },
+  { id: '3', description: 'Lunch', amount: 500, currency: 'INR', category: ExpenseCategory.FOOD, timestamp: new Date(), tripId: undefined },
+];
+
+const ExpenseSummary: React.FC<{ expenses: Expense[]; budget: Budget | null; onSetBudget: () => void }> = ({ expenses, budget, onSetBudget }) => {
     const totalExpensesByCurrency = useMemo(() => {
         return expenses.reduce((acc, expense) => {
-            if (!acc[expense.currency]) {
-                acc[expense.currency] = 0;
-            }
+            if (!acc[expense.currency]) acc[expense.currency] = 0;
             acc[expense.currency] += expense.amount;
             return acc;
         }, {} as { [currency: string]: number });
@@ -35,10 +36,11 @@ const ExpenseSummary: React.FC<{ expenses: Expense[]; budget: Budget | null; onS
             
             {Object.keys(totalExpensesByCurrency).length > 0 ? (
                 <div className="mb-4 space-y-1">
-                    {/* FIX: Replaced Object.entries with Object.keys to ensure type safety for the 'total' amount. */}
                     {Object.keys(totalExpensesByCurrency).map((currency) => (
                         <p key={currency} className="text-gray-700 dark:text-gray-300">
-                            Total Spent: <span className="font-bold text-cyan-600 dark:text-cyan-400">{new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(totalExpensesByCurrency[currency])}</span>
+                            Total Spent: <span className="font-bold text-cyan-600 dark:text-cyan-400">
+                                {new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(totalExpensesByCurrency[currency])}
+                            </span>
                         </p>
                     ))}
                 </div>
@@ -50,7 +52,9 @@ const ExpenseSummary: React.FC<{ expenses: Expense[]; budget: Budget | null; onS
                 <div>
                     <div className="flex justify-between items-baseline mb-1">
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Monthly Budget</span>
-                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{new Intl.NumberFormat(undefined, { style: 'currency', currency: budget.currency }).format(budget.amount)}</span>
+                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                            {new Intl.NumberFormat(undefined, { style: 'currency', currency: budget.currency }).format(budget.amount)}
+                        </span>
                     </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                         <div 
@@ -69,22 +73,24 @@ const ExpenseSummary: React.FC<{ expenses: Expense[]; budget: Budget | null; onS
     );
 };
 
-const Expenses: React.FC<ExpensesProps> = ({ expenses, trips, addExpense, clearExpenses }) => {
+const Expenses: React.FC<ExpensesProps> = ({ trips }) => {
+  const [expenses, setExpenses] = useState<Expense[]>(demoExpenses); // initialize with demo data
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const { budget, saveBudget } = useBudget();
 
+  const addExpense = (expense: Omit<Expense, 'id' | 'timestamp'>) => {
+    setExpenses(prev => [...prev, { ...expense, id: (prev.length + 1).toString(), timestamp: new Date() }]);
+  };
+
+  const clearExpenses = () => setExpenses(demoExpenses); // reset to demo data
+
   const groupedExpenses = useMemo(() => {
     const groups: { [key: string]: Expense[] } = { 'general': [] };
-    trips.forEach(trip => {
-        groups[trip.id] = [];
-    });
+    trips.forEach(trip => groups[trip.id] = []);
     expenses.forEach(expense => {
-      if (expense.tripId && groups[expense.tripId]) {
-        groups[expense.tripId].push(expense);
-      } else {
-        groups['general'].push(expense);
-      }
+      if (expense.tripId && groups[expense.tripId]) groups[expense.tripId].push(expense);
+      else groups['general'].push(expense);
     });
     return groups;
   }, [expenses, trips]);
@@ -106,7 +112,7 @@ const Expenses: React.FC<ExpensesProps> = ({ expenses, trips, addExpense, clearE
                     className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-500 dark:text-red-400 bg-red-500/10 rounded-md hover:bg-red-500/20 transition-colors"
                 >
                     <TrashIcon />
-                    <span>Clear All</span>
+                    <span>Reset Demo</span>
                 </button>
             )}
             <button

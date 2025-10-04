@@ -63,7 +63,7 @@ const UserApp: React.FC = () => {
             {/* Left side spacer */}
         </div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-wider">
-          Geo<span className="text-cyan-500 dark:text-cyan-400">Journey</span>
+          Trip<span className="text-cyan-500 dark:text-cyan-400">Tracker</span>
         </h1>
         <div className="flex-1 flex justify-end items-center gap-4">
 <Link
